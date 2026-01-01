@@ -20,7 +20,6 @@
 
 - 🔵 **[Event-driven]** EventBridge から起動イベントを受信したとき、システムは Feedly API で未読記事を取得しなければならない
 - 🔵 **[Ubiquitous]** システムは取得した記事を統一 Article 形式に変換しなければならない
-- 🔵 **[Ubiquitous]** システムは記事取得後、Feedly 上で既読マークを付けなければならない
 - 🔵 **[Optional]** 将来データソースを追加する場合、共通 Fetcher インターフェースで統合できなければならない
 
 ### 要約（Summarizer）
