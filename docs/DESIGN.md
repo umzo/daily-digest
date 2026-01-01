@@ -75,9 +75,11 @@ Feedly から記事を収集し、Claude 3.5 Haiku で要点を抽出、Obsidian
 |----------|------|
 | IaC | Terraform |
 | Scheduler | Amazon EventBridge |
-| Compute | AWS Lambda (Node.js 20.x) |
+| Compute | AWS Lambda (Node.js 24.x) |
 | LLM | Claude 3.5 Haiku (Anthropic API) |
 | Storage | GitHub Repository |
+| Build | tsdown (Rolldown ベース) |
+| Test | Vitest |
 | Local | Obsidian + Git |
 
 ## ディレクトリ構成
@@ -103,7 +105,8 @@ daily-digest/
 │   └── publisher.ts         # GitHub API 呼び出し
 ├── package.json
 ├── tsconfig.json
-├── esbuild.config.js        # Lambda用バンドル設定
+├── tsdown.config.ts         # Lambda用バンドル設定
+├── vitest.config.ts         # テスト設定
 └── README.md
 ```
 

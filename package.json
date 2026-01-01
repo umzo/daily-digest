@@ -1,0 +1,24 @@
+{
+  "name": "daily-digest",
+  "version": "0.1.0",
+  "description": "Feedly から記事を収集・要約し、Obsidian Vault に公開するサーバーレスシステム",
+  "type": "module",
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint src/",
+    "format": "prettier --write src/"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.4",
+    "tsdown": "0.18.4",
+    "typescript": "5.9.3",
+    "vitest": "4.0.16"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  }
+}
