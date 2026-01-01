@@ -30,8 +30,8 @@
 | レイヤー | 技術 |
 |----------|------|
 | 言語 | TypeScript |
-| ランタイム | Node.js 20.x |
-| ビルド | tsup (esbuild ベース) |
+| ランタイム | Node.js 24.x |
+| ビルド | tsdown (Rolldown ベース) |
 | テスト | Vitest |
 | IaC | Terraform |
 | コンピュート | AWS Lambda |
@@ -66,7 +66,7 @@ daily-digest/
 │   └── DESIGN.md             # システム設計書
 ├── package.json
 ├── tsconfig.json
-├── tsup.config.ts            # Lambda バンドル設定
+├── tsdown.config.ts          # Lambda バンドル設定
 ├── vitest.config.ts          # テスト設定
 ├── CLAUDE.md                 # このファイル
 └── README.md
@@ -207,7 +207,7 @@ tags:
 1. **コスト意識**: すべての設計判断で AWS 無料枠と Anthropic API コストを考慮
 
 2. **Lambda 制約**:
-   - バンドルサイズを最小限に（tsup/esbuild tree-shaking 活用）
+   - バンドルサイズを最小限に（tsdown/Rolldown tree-shaking 活用）
    - タイムアウトを考慮した設計（最大10-15分）
    - 記事はバッチ処理
 

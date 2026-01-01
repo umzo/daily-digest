@@ -1,9 +1,9 @@
-import { defineConfig } from 'tsup'
+import { defineConfig } from 'tsdown'
 
 export default defineConfig({
   entry: ['src/index.ts'],
   format: ['cjs'],
-  target: 'node20',
+  target: 'node24',
   platform: 'node',
   outDir: 'dist',
   clean: true,

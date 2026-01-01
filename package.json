@@ -4,8 +4,8 @@
   "description": "Feedly から記事を収集・要約し、Obsidian Vault に公開するサーバーレスシステム",
   "type": "module",
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
+    "build": "tsdown",
+    "dev": "tsdown --watch",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
@@ -13,12 +13,12 @@
     "format": "prettier --write src/"
   },
   "devDependencies": {
-    "@types/node": "20.19.27",
-    "tsup": "8.5.1",
+    "@types/node": "24.10.4",
+    "tsdown": "0.18.4",
     "typescript": "5.9.3",
     "vitest": "4.0.16"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=24.0.0"
   }
 }
