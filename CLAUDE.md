@@ -4,10 +4,11 @@
 
 ## プロジェクト概要
 
-**Daily Digest** は、複数のソース（X/Twitter、Feedly）から記事を収集・要約し、GitHub 経由で Obsidian Vault に公開するサーバーレスシステムです。
+**Daily Digest** は、Feedly から記事を収集・要約し、GitHub 経由で Obsidian Vault に公開するサーバーレスシステムです。
+データソースは拡張可能な設計となっており、将来的に他のソース（X、RSS、Hacker News 等）を追加可能です。
 
 ### コアワークフロー
-1. **収集**: 毎日 6:00 JST に X と Feedly から記事を取得
+1. **収集**: 毎日 6:00 JST に Feedly から記事を取得
 2. **要約**: Claude 3.5 Haiku API で要点を抽出（記事あたり3-5個の箇条書き）
 3. **公開**: Markdown を生成し GitHub リポジトリにコミット
 4. **同期**: ユーザーがローカルで pull して Obsidian で閲覧
@@ -54,9 +55,9 @@ daily-digest/
 ├── src/                       # TypeScript ソースコード
 │   ├── index.ts              # Lambda ハンドラー（エントリーポイント）
 │   ├── fetchers/
-│   │   ├── types.ts          # 共通型定義
-│   │   ├── x.ts              # X (Twitter) API クライアント
-│   │   └── feedly.ts         # Feedly API クライアント
+│   │   ├── types.ts          # 共通型定義・Fetcher インターフェース
+│   │   ├── feedly.ts         # Feedly API クライアント
+│   │   └── ...               # 将来: 他ソース用 Fetcher を追加
 │   ├── summarizer.ts         # Claude API ラッパー
 │   ├── formatter.ts          # Markdown 生成
 │   └── publisher.ts          # GitHub API ラッパー
@@ -94,11 +95,19 @@ npm test
 
 ## 主要な型定義
 
+### Fetcher インターフェース（拡張用）
+```typescript
+interface Fetcher {
+  readonly name: string;
+  fetch(): Promise<Article[]>;
+}
+```
+
 ### Article（統一入力フォーマット）
 ```typescript
 interface Article {
   id: string;
-  source: 'x' | 'feedly';
+  source: string;           // 'feedly', 'rss', 'x' など（拡張可能）
   title: string;
   content: string;
   url: string;
@@ -119,7 +128,7 @@ interface Summary {
 
 ## アーキテクチャパターン
 
-1. **モジュラー Fetcher**: ソースごとに独立したクラス、すべて `Article[]` を出力
+1. **モジュラー Fetcher**: 共通インターフェースを実装し、新ソースを容易に追加可能
 2. **バッチ処理**: 10件並列 × 10バッチで約100件/日を処理
 3. **エラー耐性**: 個別記事の失敗がパイプライン全体をブロックしない
 4. **関心の分離**: Fetchers → Summarizer → Formatter → Publisher
@@ -143,7 +152,6 @@ interface Summary {
 ---
 date: 2025-01-01
 sources:
-  - x
   - feedly
 article_count: 42
 tags:
@@ -160,7 +168,7 @@ tags:
 - 要点2
 - 要点3
 
-> [Source](URL) via X (@handle)
+> [Source](URL) via Feedly
 ```
 
 ## 外部 API
@@ -168,11 +176,11 @@ tags:
 | API | 認証方式 | シークレット名 |
 |-----|----------|----------------|
 | Anthropic | API Key | `ANTHROPIC_API_KEY` |
-| X (Twitter) | Bearer Token | `X_BEARER_TOKEN` |
 | Feedly | OAuth Token | `FEEDLY_ACCESS_TOKEN` |
 | GitHub | PAT (Fine-grained) | `GITHUB_TOKEN` |
 
 シークレットは AWS Secrets Manager の `daily-digest-secrets` に保存。
+※ 将来データソースを追加する際は、必要な認証情報を追加。
 
 ## AWS リソース
 
@@ -211,12 +219,12 @@ tags:
 ### 実装優先度
 
 1. **Phase 1 (MVP)**: Terraform 構築、Feedly Fetcher、Summarizer、Formatter、Publisher
-2. **Phase 2**: X API Fetcher 統合
-3. **Phase 3**: エラーハンドリング強化、CloudWatch アラーム、プロンプトチューニング
+2. **Phase 2**: エラーハンドリング強化、CloudWatch アラーム、プロンプトチューニング
+3. **Phase 3 (任意)**: 追加 Fetcher 実装（X, RSS, HN 等）
 
 ## 将来の拡張ポイント
 
-- 追加ソース: RSS, Hacker News, Reddit
+- 追加ソース: X (Twitter), RSS, Hacker News, Reddit（共通 Fetcher インターフェース実装）
 - 通知: Slack, Discord, メール
 - Web UI: S3 + CloudFront 静的サイト
 - 自動タグ付け: LLM ベースのカテゴリ・タグ生成
@@ -224,7 +232,6 @@ tags:
 ## 参考リンク
 
 - [設計書](docs/DESIGN.md) - システム設計ドキュメント
-- [X API v2 Documentation](https://developer.x.com/en/docs/twitter-api)
 - [Feedly API Documentation](https://developer.feedly.com/)
 - [Anthropic API Documentation](https://docs.anthropic.com/)
 - [GitHub Contents API](https://docs.github.com/en/rest/repos/contents)
