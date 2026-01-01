@@ -20,5 +20,8 @@
   },
   "engines": {
     "node": ">=24.0.0"
+  },
+  "dependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.958.0"
   }
 }

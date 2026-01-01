@@ -21,9 +21,9 @@
 **依存**: なし
 **被依存**: Fetcher, Summarizer, Publisher
 
-- [ ] Secrets Manager クライアント
-- [ ] シークレット取得関数
-- [ ] キャッシュ機構
+- [x] Secrets Manager クライアント
+- [x] シークレット取得関数
+- [x] キャッシュ機構
 
 ### 1.3 共通ユーティリティ (`src/utils/retry.ts`)
 **依存**: なし
