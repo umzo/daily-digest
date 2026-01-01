@@ -31,7 +31,8 @@
 |----------|------|
 | 言語 | TypeScript |
 | ランタイム | Node.js 20.x |
-| ビルド | esbuild |
+| ビルド | tsup (esbuild ベース) |
+| テスト | Vitest |
 | IaC | Terraform |
 | コンピュート | AWS Lambda |
 | スケジューラー | AWS EventBridge |
@@ -65,7 +66,8 @@ daily-digest/
 │   └── DESIGN.md             # システム設計書
 ├── package.json
 ├── tsconfig.json
-├── esbuild.config.js         # Lambda バンドル設定
+├── tsup.config.ts            # Lambda バンドル設定
+├── vitest.config.ts          # テスト設定
 ├── CLAUDE.md                 # このファイル
 └── README.md
 ```
@@ -91,6 +93,12 @@ npm run format
 
 # テスト実行
 npm test
+
+# テスト（ウォッチモード）
+npm run test:watch
+
+# カバレッジ付きテスト
+npm run test:coverage
 ```
 
 ## 主要な型定義
@@ -199,7 +207,7 @@ tags:
 1. **コスト意識**: すべての設計判断で AWS 無料枠と Anthropic API コストを考慮
 
 2. **Lambda 制約**:
-   - バンドルサイズを最小限に（esbuild tree-shaking 活用）
+   - バンドルサイズを最小限に（tsup/esbuild tree-shaking 活用）
    - タイムアウトを考慮した設計（最大10-15分）
    - 記事はバッチ処理
 

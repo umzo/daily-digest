@@ -78,6 +78,8 @@ Feedly から記事を収集し、Claude 3.5 Haiku で要点を抽出、Obsidian
 | Compute | AWS Lambda (Node.js 20.x) |
 | LLM | Claude 3.5 Haiku (Anthropic API) |
 | Storage | GitHub Repository |
+| Build | tsup (esbuild ベース) |
+| Test | Vitest |
 | Local | Obsidian + Git |
 
 ## ディレクトリ構成
@@ -103,7 +105,8 @@ daily-digest/
 │   └── publisher.ts         # GitHub API 呼び出し
 ├── package.json
 ├── tsconfig.json
-├── esbuild.config.js        # Lambda用バンドル設定
+├── tsup.config.ts           # Lambda用バンドル設定
+├── vitest.config.ts         # テスト設定
 └── README.md
 ```
 
