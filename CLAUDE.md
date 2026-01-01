@@ -1,100 +1,100 @@
-# CLAUDE.md - AI Assistant Guide for Daily Digest
+# CLAUDE.md - AI アシスタント向けガイド
 
-This document provides essential context for AI assistants working on the daily-digest codebase.
+このドキュメントは、daily-digest コードベースで作業する AI アシスタント向けの必須コンテキストを提供します。
 
-## Project Overview
+## プロジェクト概要
 
-**Daily Digest** is a serverless system that automates the collection, summarization, and publishing of articles from multiple sources (X/Twitter and Feedly) to an Obsidian Vault via GitHub.
+**Daily Digest** は、複数のソース（X/Twitter、Feedly）から記事を収集・要約し、GitHub 経由で Obsidian Vault に公開するサーバーレスシステムです。
 
-### Core Workflow
-1. **Collect**: Fetch articles from X (Twitter) and Feedly daily at 6:00 AM JST
-2. **Summarize**: Use Claude 3.5 Haiku API to extract key points (3-5 bullets per article)
-3. **Publish**: Generate Markdown and commit to GitHub repository
-4. **Sync**: User pulls updates locally into Obsidian for note-taking
+### コアワークフロー
+1. **収集**: 毎日 6:00 JST に X と Feedly から記事を取得
+2. **要約**: Claude 3.5 Haiku API で要点を抽出（記事あたり3-5個の箇条書き）
+3. **公開**: Markdown を生成し GitHub リポジトリにコミット
+4. **同期**: ユーザーがローカルで pull して Obsidian で閲覧
 
-### Key Constraints
-- Personal use case (single user)
-- Target monthly cost: ~$2.50 (500 JPY or less)
-- Handles 10-100 articles per day
-- Must complete within Lambda timeout limits
+### 主な制約
+- 個人利用（シングルユーザー）
+- 月額コスト目標: 約500円以下
+- 1日あたり10-100件の記事を処理
+- Lambda タイムアウト内で完了必須
 
-## Project Status
+## プロジェクト状況
 
-**Current Phase**: Design documentation complete, pre-implementation
+**現在のフェーズ**: 設計ドキュメント完了、実装前
 
-See `docs/DESIGN.md` for the comprehensive system design document (in Japanese).
+詳細は `docs/DESIGN.md` を参照（システム設計書）。
 
-## Technology Stack
+## 技術スタック
 
-| Layer | Technology |
-|-------|------------|
-| Language | TypeScript |
-| Runtime | Node.js 20.x |
-| Build | esbuild |
+| レイヤー | 技術 |
+|----------|------|
+| 言語 | TypeScript |
+| ランタイム | Node.js 20.x |
+| ビルド | esbuild |
 | IaC | Terraform |
-| Compute | AWS Lambda |
-| Scheduler | AWS EventBridge |
-| Secrets | AWS Secrets Manager |
+| コンピュート | AWS Lambda |
+| スケジューラー | AWS EventBridge |
+| シークレット | AWS Secrets Manager |
 | LLM | Claude 3.5 Haiku (Anthropic API) |
-| Storage | GitHub Repository |
-| Local | Obsidian + Git |
+| ストレージ | GitHub Repository |
+| ローカル | Obsidian + Git |
 
-## Directory Structure (Planned)
+## ディレクトリ構成（計画）
 
 ```
 daily-digest/
 ├── terraform/                 # Infrastructure as Code
-│   ├── main.tf               # Provider configuration
-│   ├── variables.tf          # Variable definitions
-│   ├── secrets.tf            # Secrets Manager resources
-│   ├── lambda.tf             # Lambda configuration
-│   ├── eventbridge.tf        # Scheduler rules
-│   ├── iam.tf                # IAM roles & policies
-│   └── outputs.tf            # Output values
-├── src/                       # TypeScript source code
-│   ├── index.ts              # Lambda handler entry point
+│   ├── main.tf               # プロバイダー設定
+│   ├── variables.tf          # 変数定義
+│   ├── secrets.tf            # Secrets Manager リソース
+│   ├── lambda.tf             # Lambda 設定
+│   ├── eventbridge.tf        # スケジューラールール
+│   ├── iam.tf                # IAM ロール・ポリシー
+│   └── outputs.tf            # 出力値
+├── src/                       # TypeScript ソースコード
+│   ├── index.ts              # Lambda ハンドラー（エントリーポイント）
 │   ├── fetchers/
-│   │   ├── types.ts          # Common type definitions
-│   │   ├── x.ts              # X (Twitter) API client
-│   │   └── feedly.ts         # Feedly API client
-│   ├── summarizer.ts         # Claude API wrapper
-│   ├── formatter.ts          # Markdown generation
-│   └── publisher.ts          # GitHub API wrapper
+│   │   ├── types.ts          # 共通型定義
+│   │   ├── x.ts              # X (Twitter) API クライアント
+│   │   └── feedly.ts         # Feedly API クライアント
+│   ├── summarizer.ts         # Claude API ラッパー
+│   ├── formatter.ts          # Markdown 生成
+│   └── publisher.ts          # GitHub API ラッパー
 ├── docs/
-│   └── DESIGN.md             # System design document (Japanese)
+│   └── DESIGN.md             # システム設計書
 ├── package.json
 ├── tsconfig.json
-├── esbuild.config.js         # Lambda bundling config
-├── CLAUDE.md                 # This file
+├── esbuild.config.js         # Lambda バンドル設定
+├── CLAUDE.md                 # このファイル
 └── README.md
 ```
 
-## Common Commands
+## 主要コマンド
 
 ```bash
-# Install dependencies
+# 依存関係インストール
 npm install
 
-# Build for Lambda
+# Lambda 用ビルド
 npm run build
 
-# Run locally (development)
+# ローカル実行（開発）
 npm run dev
 
-# Deploy infrastructure
+# インフラデプロイ
 cd terraform && terraform apply
 
-# Lint & format
+# Lint & フォーマット
 npm run lint
 npm run format
 
-# Run tests
+# テスト実行
 npm test
 ```
 
-## Key Type Definitions
+## 主要な型定義
 
-### Article (unified input format)
+### Article（統一入力フォーマット）
 ```typescript
 interface Article {
   id: string;
@@ -108,37 +108,37 @@ interface Article {
 }
 ```
 
-### Summary (output from summarizer)
+### Summary（要約出力）
 ```typescript
 interface Summary {
   article: Article;
-  bullets: string[];      // 3-5 key points
-  category?: string;      // Auto-classified category
+  bullets: string[];      // 3-5個の要点
+  category?: string;      // 自動分類カテゴリ
 }
 ```
 
-## Architecture Patterns
+## アーキテクチャパターン
 
-1. **Modular Fetchers**: Separate classes per data source, all outputting `Article[]`
-2. **Batch Processing**: 10 articles in parallel × 10 batches to handle ~100/day
-3. **Error Resilience**: Individual article failures don't block the pipeline
-4. **Separation of Concerns**: Fetchers → Summarizer → Formatter → Publisher
+1. **モジュラー Fetcher**: ソースごとに独立したクラス、すべて `Article[]` を出力
+2. **バッチ処理**: 10件並列 × 10バッチで約100件/日を処理
+3. **エラー耐性**: 個別記事の失敗がパイプライン全体をブロックしない
+4. **関心の分離**: Fetchers → Summarizer → Formatter → Publisher
 
-## Code Conventions
+## コーディング規約
 
-### Naming
-- File names: `snake_case` or `kebab-case` (e.g., `types.ts`, `feedly.ts`)
-- Functions/variables: `camelCase`
-- Interfaces/types: `PascalCase`
-- Constants: `UPPER_SNAKE_CASE` for environment variables
+### 命名規則
+- ファイル名: `snake_case` または `kebab-case`（例: `types.ts`, `feedly.ts`）
+- 関数・変数: `camelCase`
+- インターフェース・型: `PascalCase`
+- 定数: 環境変数は `UPPER_SNAKE_CASE`
 
-### Error Handling
-- Use exponential backoff for API rate limits (max 3 retries)
-- Skip individual failing articles (log error, continue processing)
-- Wrap LLM failures with fallback message
-- Critical failures (GitHub commit) should trigger CloudWatch alarms
+### エラーハンドリング
+- API レート制限には指数バックオフ（最大3回リトライ）
+- 個別記事の失敗はスキップ（エラーログ出力、処理続行）
+- LLM 失敗時はフォールバックメッセージで対応
+- 重大な失敗（GitHub コミット）は CloudWatch アラームをトリガー
 
-### Markdown Output Format
+### Markdown 出力フォーマット
 ```markdown
 ---
 date: 2025-01-01
@@ -155,77 +155,75 @@ tags:
 
 ## Tech
 
-### Article Title
-- Key point 1
-- Key point 2
-- Key point 3
+### 記事タイトル
+- 要点1
+- 要点2
+- 要点3
 
 > [Source](URL) via X (@handle)
 ```
 
-## External APIs
+## 外部 API
 
-| API | Auth Method | Key Secret Name |
-|-----|-------------|-----------------|
+| API | 認証方式 | シークレット名 |
+|-----|----------|----------------|
 | Anthropic | API Key | `ANTHROPIC_API_KEY` |
 | X (Twitter) | Bearer Token | `X_BEARER_TOKEN` |
 | Feedly | OAuth Token | `FEEDLY_ACCESS_TOKEN` |
 | GitHub | PAT (Fine-grained) | `GITHUB_TOKEN` |
 
-Secrets are stored in AWS Secrets Manager under `daily-digest-secrets`.
+シークレットは AWS Secrets Manager の `daily-digest-secrets` に保存。
 
-## AWS Resources
+## AWS リソース
 
-| Resource | Name | Purpose |
-|----------|------|---------|
-| Lambda | `daily-digest` | Main processing function |
-| EventBridge | `daily-digest-schedule` | Cron: `0 21 * * ? *` (6 AM JST) |
-| CloudWatch Logs | `/aws/lambda/daily-digest` | Logging |
-| Secrets Manager | `daily-digest-secrets` | API credentials |
-| IAM Role | `daily-digest-lambda-role` | Lambda execution role |
+| リソース | 名前 | 用途 |
+|----------|------|------|
+| Lambda | `daily-digest` | メイン処理関数 |
+| EventBridge | `daily-digest-schedule` | Cron: `0 21 * * ? *` (6:00 JST) |
+| CloudWatch Logs | `/aws/lambda/daily-digest` | ログ出力 |
+| Secrets Manager | `daily-digest-secrets` | API 認証情報 |
+| IAM Role | `daily-digest-lambda-role` | Lambda 実行ロール |
 
-## Development Guidelines
+## 開発ガイドライン
 
-### For AI Assistants
+### AI アシスタント向け
 
-1. **Language**: The design document is in Japanese. Code comments and documentation may be in Japanese or English.
+1. **コスト意識**: すべての設計判断で AWS 無料枠と Anthropic API コストを考慮
 
-2. **Cost Awareness**: All design decisions should consider AWS free tier limits and minimize Anthropic API usage costs.
+2. **Lambda 制約**:
+   - バンドルサイズを最小限に（esbuild tree-shaking 活用）
+   - タイムアウトを考慮した設計（最大10-15分）
+   - 記事はバッチ処理
 
-3. **Lambda Constraints**:
-   - Keep bundle size minimal (use esbuild tree-shaking)
-   - Design for potential timeout (10-15 min max)
-   - Process articles in batches
+3. **テスト**:
+   - 各コンポーネントを独立してユニットテスト
+   - 外部 API はモック化
+   - エラーハンドリングパスもテスト
 
-4. **Testing**:
-   - Unit test each component in isolation
-   - Mock external APIs for testing
-   - Test error handling paths
+4. **コミット**: Conventional Commits 形式を使用
+   - `feat:` 新機能
+   - `fix:` バグ修正
+   - `docs:` ドキュメント変更
+   - `refactor:` リファクタリング
+   - `test:` テスト追加・変更
+   - `chore:` メンテナンスタスク
 
-5. **Commits**: Use conventional commit format:
-   - `feat:` new features
-   - `fix:` bug fixes
-   - `docs:` documentation changes
-   - `refactor:` code refactoring
-   - `test:` test additions/changes
-   - `chore:` maintenance tasks
+### 実装優先度
 
-### Implementation Priority
+1. **Phase 1 (MVP)**: Terraform 構築、Feedly Fetcher、Summarizer、Formatter、Publisher
+2. **Phase 2**: X API Fetcher 統合
+3. **Phase 3**: エラーハンドリング強化、CloudWatch アラーム、プロンプトチューニング
 
-1. **Phase 1 (MVP)**: Terraform setup, Feedly Fetcher, Summarizer, Formatter, Publisher
-2. **Phase 2**: X API Fetcher integration
-3. **Phase 3**: Error handling hardening, CloudWatch alarms, prompt tuning
+## 将来の拡張ポイント
 
-## Future Extension Points
+- 追加ソース: RSS, Hacker News, Reddit
+- 通知: Slack, Discord, メール
+- Web UI: S3 + CloudFront 静的サイト
+- 自動タグ付け: LLM ベースのカテゴリ・タグ生成
 
-- Additional sources: RSS, Hacker News, Reddit
-- Notifications: Slack, Discord, email
-- Web UI: S3 + CloudFront static site
-- Auto-tagging: LLM-based category/tag generation
+## 参考リンク
 
-## References
-
-- [Design Document](docs/DESIGN.md) - Comprehensive system design (Japanese)
+- [設計書](docs/DESIGN.md) - システム設計ドキュメント
 - [X API v2 Documentation](https://developer.x.com/en/docs/twitter-api)
 - [Feedly API Documentation](https://developer.feedly.com/)
 - [Anthropic API Documentation](https://docs.anthropic.com/)
