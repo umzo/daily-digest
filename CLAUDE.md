@@ -204,6 +204,11 @@ tags:
 
 ### AI アシスタント向け
 
+> **重要**: 実装作業を開始する前に、必ず以下のドキュメントを参照すること
+> - `.rulesync/rules/docs-structure.md` - ドキュメント構成ルール
+> - `docs/DESIGN.md` - システム設計書
+> - `docs/IMPLEMENTATION_PLAN.md` - 実装計画書
+
 1. **コスト意識**: すべての設計判断で AWS 無料枠と Anthropic API コストを考慮
 
 2. **Lambda 制約**:
@@ -240,6 +245,7 @@ tags:
 ## 参考リンク
 
 - [設計書](docs/DESIGN.md) - システム設計ドキュメント
+- [ドキュメント構成ルール](.rulesync/rules/docs-structure.md) - docs ディレクトリ構成と作成ルール
 - [Feedly API Documentation](https://developer.feedly.com/)
 - [Anthropic API Documentation](https://docs.anthropic.com/)
 - [GitHub Contents API](https://docs.github.com/en/rest/repos/contents)
