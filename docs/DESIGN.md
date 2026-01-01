@@ -2,7 +2,8 @@
 
 ## 概要
 
-X (Twitter) と Feedly から記事・投稿を収集し、Claude 3.5 Haiku で要点を抽出、Obsidian Vault に Markdown として出力するシステム。
+Feedly から記事を収集し、Claude 3.5 Haiku で要点を抽出、Obsidian Vault に Markdown として出力するシステム。
+データソースは拡張可能な設計とし、将来的に他のソース（RSS、X、Hacker News 等）を追加可能。
 
 ## 要件
 
@@ -30,9 +31,10 @@ X (Twitter) と Feedly から記事・投稿を収集し、Claude 3.5 Haiku で�
 │                                             │
 │  ┌─────────────────────────────────────┐   │
 │  │           Fetchers                   │   │
-│  │  ┌───────────┐   ┌───────────────┐  │   │
-│  │  │  X API    │   │  Feedly API   │  │   │
-│  │  └───────────┘   └───────────────┘  │   │
+│  │  ┌───────────────┐   ┌─────────┐    │   │
+│  │  │  Feedly API   │   │  ...    │    │   │
+│  │  └───────────────┘   └─────────┘    │   │
+│  │  (将来: RSS, X, HN 等を追加可能)     │   │
 │  └─────────────────────────────────────┘   │
 │                      │                      │
 │                      ▼                      │
@@ -93,9 +95,9 @@ daily-digest/
 ├── src/
 │   ├── index.ts             # Lambda handler (エントリーポイント)
 │   ├── fetchers/
-│   │   ├── types.ts         # 共通型定義
-│   │   ├── x.ts             # X API クライアント
-│   │   └── feedly.ts        # Feedly API クライアント
+│   │   ├── types.ts         # 共通型定義・Fetcher インターフェース
+│   │   ├── feedly.ts        # Feedly API クライアント
+│   │   └── ...              # 将来: 他のソース用 Fetcher を追加
 │   ├── summarizer.ts        # Claude API 呼び出し
 │   ├── formatter.ts         # Markdown 生成
 │   └── publisher.ts         # GitHub API 呼び出し
@@ -110,12 +112,20 @@ daily-digest/
 ### Fetchers
 
 ソースごとに記事を取得し、統一フォーマットに変換する。
+共通インターフェースにより、新しいデータソースを容易に追加可能。
 
 ```typescript
 // src/fetchers/types.ts
+
+// 共通 Fetcher インターフェース（拡張用）
+export interface Fetcher {
+  readonly name: string;
+  fetch(): Promise<Article[]>;
+}
+
 export interface Article {
   id: string;
-  source: 'x' | 'feedly';
+  source: string;           // 'feedly', 'rss', 'x' など（拡張可能）
   title: string;
   content: string;
   url: string;
@@ -124,12 +134,6 @@ export interface Article {
   tags?: string[];
 }
 ```
-
-#### X Fetcher
-
-- 使用API: X API v2 (Bearer Token認証)
-- 取得対象: 指定リストのツイート or ブックマーク
-- 取得期間: 過去24時間
 
 #### Feedly Fetcher
 
@@ -245,7 +249,6 @@ export async function publish(
 ---
 date: 2025-01-01
 sources:
-  - x
   - feedly
 article_count: 42
 tags:
@@ -262,7 +265,7 @@ tags:
 - コンテキストウィンドウが100万トークンに拡大
 - API価格は据え置き、来月から利用可能
 
-> [Source](https://example.com/article1) via X (@OpenAI)
+> [Source](https://example.com/article1) via Feedly
 
 ### Rust 2.0 正式リリース
 - async/await の人間工学的改善
@@ -308,11 +311,12 @@ AWS Secrets Manager に以下を保存:
 ```json
 {
   "ANTHROPIC_API_KEY": "sk-ant-...",
-  "X_BEARER_TOKEN": "AAAA...",
   "FEEDLY_ACCESS_TOKEN": "...",
   "GITHUB_TOKEN": "ghp_..."
 }
 ```
+
+※ 将来データソースを追加する際は、必要な認証情報をここに追加
 
 ## コスト試算
 
@@ -338,7 +342,8 @@ AWS Secrets Manager に以下を保存:
 
 将来的に追加可能な機能:
 
-1. **ソース追加**: RSS, Hacker News, Reddit など
+1. **ソース追加**: X (Twitter), RSS, Hacker News, Reddit など
+   - 共通 Fetcher インターフェースを実装するだけで追加可能
 2. **通知**: Slack, Discord, メール で要約を送信
 3. **Web UI**: S3 + CloudFront で静的サイトホスティング
 4. **検索**: Obsidian の検索機能で対応（追加実装不要）
@@ -355,20 +360,19 @@ AWS Secrets Manager に以下を保存:
 - [ ] Publisher 実装
 - [ ] 動作確認
 
-### Phase 2: X 対応
-
-- [ ] X Fetcher 実装
-- [ ] ソース統合テスト
-
-### Phase 3: 改善
+### Phase 2: 改善
 
 - [ ] エラーハンドリング強化
 - [ ] CloudWatch アラーム設定
 - [ ] プロンプトチューニング
 
+### Phase 3: ソース拡張（任意）
+
+- [ ] 追加 Fetcher 実装（X, RSS, HN 等）
+- [ ] ソース統合テスト
+
 ## 参考リンク
 
-- [X API v2 Documentation](https://developer.x.com/en/docs/twitter-api)
 - [Feedly API Documentation](https://developer.feedly.com/)
 - [Anthropic API Documentation](https://docs.anthropic.com/)
 - [GitHub Contents API](https://docs.github.com/en/rest/repos/contents)
