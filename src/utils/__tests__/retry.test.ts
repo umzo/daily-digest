@@ -144,8 +144,8 @@ describe('withRetry', () => {
     it('最大リトライ回数を超えた場合は最後のエラーをスローする', async () => {
       const fn = vi.fn().mockRejectedValue(new Error('永続的なエラー'))
 
-      let caughtError: Error | null = null
-      const promise = withRetry(fn).catch((e: Error) => {
+      let caughtError: unknown = null
+      const promise = withRetry(fn).catch((e: unknown) => {
         caughtError = e
       })
 
@@ -155,7 +155,7 @@ describe('withRetry', () => {
       await promise
 
       expect(caughtError).toBeInstanceOf(Error)
-      expect(caughtError?.message).toBe('永続的なエラー')
+      expect((caughtError as Error).message).toBe('永続的なエラー')
     })
 
     it('shouldRetry で特定のエラーをリトライ対象外にできる', async () => {
