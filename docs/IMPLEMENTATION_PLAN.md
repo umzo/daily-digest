@@ -67,19 +67,19 @@
 **依存**: types.ts
 **被依存**: Lambda Handler
 
-- [ ] YAML frontmatter 生成
-- [ ] カテゴリ別グループ化
-- [ ] Markdown 本文生成
-- [ ] ファイルパス生成 (`digests/YYYY-MM-DD.md`)
+- [x] YAML frontmatter 生成
+- [x] カテゴリ別グループ化
+- [x] Markdown 本文生成
+- [x] ファイルパス生成 (`digests/YYYY-MM-DD.md`)
 
 ### 4.2 Publisher (`src/publisher.ts`)
 **依存**: secrets.ts, retry.ts
 **被依存**: Lambda Handler
 
-- [ ] GitHub Contents API クライアント
-- [ ] ファイル作成/更新
-- [ ] CloudWatch アラーム連携
-- [ ] エラーハンドリング
+- [x] GitHub Contents API クライアント
+- [x] ファイル作成/更新
+- [x] CloudWatch アラーム連携
+- [x] エラーハンドリング
 
 ---
 
