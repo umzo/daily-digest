@@ -9,6 +9,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import type { Article, Summary } from './fetchers/types'
 import { getSecrets } from './secrets'
 import { withRetry, logError } from './utils/retry'
+import { SUMMARIZER_SYSTEM_PROMPT, buildSummarizerPrompt } from './prompts'
 
 /** Summarizer の設定 */
 export interface SummarizerConfig {
@@ -29,34 +30,6 @@ const MAX_TOKENS = 1024
 /** フォールバックメッセージ */
 const FALLBACK_BULLET = '要約の取得に失敗しました'
 const FALLBACK_CATEGORY = 'Other'
-
-/**
- * 要約プロンプトを構築
- */
-function buildPrompt(article: Article): string {
-  return `あなたは情報整理のエキスパートです。
-以下の記事の要点を3-5個の箇条書きで簡潔にまとめてください。
-
-# ルール
-- 各項目は1行で完結させる
-- 重要な数値や固有名詞は必ず含める
-- 主観的な評価は避け、事実のみを抽出する
-
-# 記事
-タイトル: ${article.title}
-本文: ${article.content}
-
-# 出力形式
-箇条書きの後に、記事のカテゴリを1つ選んで記載してください。
-カテゴリは Tech, Business, Science, Entertainment, Other のいずれかです。
-
-例:
-- 要点1
-- 要点2
-- 要点3
-
-カテゴリ: Tech`
-}
 
 /**
  * Claude API レスポンスをパースして Summary を生成
@@ -236,15 +209,16 @@ export class Summarizer {
    */
   private async callClaudeAPI(article: Article): Promise<Summary> {
     const client = await this.getClient()
-    const prompt = buildPrompt(article)
+    const userPrompt = buildSummarizerPrompt(article)
 
     const response = await client.messages.create({
       model: MODEL,
       max_tokens: MAX_TOKENS,
+      system: SUMMARIZER_SYSTEM_PROMPT,
       messages: [
         {
           role: 'user',
-          content: prompt,
+          content: userPrompt,
         },
       ],
     })
