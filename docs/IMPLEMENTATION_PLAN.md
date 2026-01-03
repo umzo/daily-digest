@@ -89,10 +89,10 @@
 **依存**: 全コンポーネント
 **被依存**: EventBridge
 
-- [ ] EventBridge イベント受信
-- [ ] パイプライン実行（Fetcher → Summarizer → Formatter → Publisher）
-- [ ] エラーハンドリング（部分失敗時の続行）
-- [ ] レスポンス返却
+- [x] EventBridge イベント受信
+- [x] パイプライン実行（Fetcher → Summarizer → Formatter → Publisher）
+- [x] エラーハンドリング（部分失敗時の続行）
+- [x] レスポンス返却
 
 ---
 
