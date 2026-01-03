@@ -11,8 +11,15 @@ import { withRetry, logError } from '../utils/retry'
 /** Feedly API のベース URL */
 const FEEDLY_API_BASE = 'https://cloud.feedly.com/v3'
 
-/** ストリーム ID（すべての未読記事） */
-const STREAM_ID = 'user/-/category/global.all'
+/** 1回のリクエストで取得する最大記事数 */
+const MAX_COUNT = 100
+
+/**
+ * Feedly API のプロファイルレスポンス型
+ */
+interface FeedlyProfile {
+  id: string
+}
 
 /**
  * Feedly API のエントリレスポンス型
@@ -80,6 +87,9 @@ function shouldRetry(error: Error): boolean {
 export class FeedlyFetcher implements Fetcher {
   readonly name = 'feedly'
 
+  /** キャッシュされたユーザーID */
+  private cachedUserId: string | null = null
+
   /**
    * Feedly API から未読記事を取得
    *
@@ -90,8 +100,14 @@ export class FeedlyFetcher implements Fetcher {
     const secrets = await getSecrets()
     const token = secrets.FEEDLY_ACCESS_TOKEN
 
+    // ユーザーIDを取得（キャッシュがあれば使用）
+    const userId = await this.getUserId(token)
+
+    // ストリームIDを構築
+    const streamId = `user/${userId}/category/global.all`
+
     const response = await withRetry(
-      () => this.fetchStream(token),
+      () => this.fetchStream(token, streamId),
       {
         maxRetries: 3,
         baseDelay: 1000,
@@ -118,10 +134,75 @@ export class FeedlyFetcher implements Fetcher {
   }
 
   /**
+   * ユーザーIDを取得
+   *
+   * /v3/profile エンドポイントからユーザーIDを取得する。
+   * キャッシュがあれば再利用する。
+   */
+  private async getUserId(token: string): Promise<string> {
+    if (this.cachedUserId) {
+      return this.cachedUserId
+    }
+
+    const profile = await withRetry(
+      () => this.fetchProfile(token),
+      {
+        maxRetries: 3,
+        baseDelay: 1000,
+        shouldRetry,
+        onRetry: (error, attempt) => {
+          logError('Feedly Profile API', error, { attempt })
+        },
+      }
+    )
+
+    // id は "user/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" 形式
+    // "user/" プレフィックスを除去してユーザーIDのみ取得
+    const userId = profile.id.replace(/^user\//, '')
+    this.cachedUserId = userId
+
+    return userId
+  }
+
+  /**
+   * プロファイルを取得
+   */
+  private async fetchProfile(token: string): Promise<FeedlyProfile> {
+    const url = `${FEEDLY_API_BASE}/profile`
+
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('認証エラー: Feedly アクセストークンが無効です')
+      }
+      if (response.status === 429) {
+        throw new Error('レート制限 (429): リクエスト制限に達しました')
+      }
+      throw new Error(`Feedly API エラー: ${response.status}`)
+    }
+
+    return response.json() as Promise<FeedlyProfile>
+  }
+
+  /**
    * Feedly API にリクエストを送信
    */
-  private async fetchStream(token: string): Promise<FeedlyStreamResponse> {
-    const url = `${FEEDLY_API_BASE}/streams/contents?streamId=${encodeURIComponent(STREAM_ID)}&unreadOnly=true`
+  private async fetchStream(
+    token: string,
+    streamId: string
+  ): Promise<FeedlyStreamResponse> {
+    const params = new URLSearchParams({
+      streamId,
+      unreadOnly: 'true',
+      count: String(MAX_COUNT),
+    })
+
+    const url = `${FEEDLY_API_BASE}/streams/contents?${params.toString()}`
 
     const response = await fetch(url, {
       headers: {
@@ -166,5 +247,12 @@ export class FeedlyFetcher implements Fetcher {
       publishedAt: new Date(entry.published ?? Date.now()),
       tags: entry.keywords,
     }
+  }
+
+  /**
+   * ユーザーIDキャッシュをクリア（テスト用）
+   */
+  clearUserIdCache(): void {
+    this.cachedUserId = null
   }
 }
