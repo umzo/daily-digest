@@ -13,6 +13,7 @@
     "format": "prettier --write src/"
   },
   "devDependencies": {
+    "@types/aws-lambda": "^8.10.159",
     "@types/node": "24.10.4",
     "tsdown": "0.18.4",
     "typescript": "5.9.3",
