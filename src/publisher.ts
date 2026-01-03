@@ -198,7 +198,7 @@ export class Publisher {
       )
     }
 
-    const data = await response.json()
+    const data = (await response.json()) as { sha: string }
     return data.sha
   }
 
@@ -261,7 +261,7 @@ export class Publisher {
       )
     }
 
-    const data = await response.json()
+    const data = (await response.json()) as { commit: { sha: string } }
     return data.commit.sha
   }
 }
