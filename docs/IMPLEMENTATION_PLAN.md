@@ -40,10 +40,10 @@
 **依存**: types.ts, secrets.ts, retry.ts
 **被依存**: Lambda Handler
 
-- [ ] Feedly API クライアント
-- [ ] 未読記事取得
-- [ ] Article 形式への変換
-- [ ] エラーハンドリング（リトライ、スキップ）
+- [x] Feedly API クライアント
+- [x] 未読記事取得
+- [x] Article 形式への変換
+- [x] エラーハンドリング（リトライ、スキップ）
 
 ---
 
