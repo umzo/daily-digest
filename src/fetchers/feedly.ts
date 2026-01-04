@@ -209,6 +209,7 @@ export class FeedlyFetcher implements Fetcher {
     const params = new URLSearchParams({
       streamId,
       unreadOnly: 'true',
+      ranked: 'newest',
       count: String(MAX_COUNT),
     })
 
@@ -298,14 +299,18 @@ export class FeedlyFetcher implements Fetcher {
         })
 
         if (!response.ok) {
+          const body = await response.text()
+          console.error(`[Feedly] markAsRead failed: ${response.status}`, body)
           if (response.status === 401) {
             throw new Error('認証エラー: Feedly アクセストークンが無効です')
           }
           if (response.status === 429) {
             throw new Error('レート制限 (429): リクエスト制限に達しました')
           }
-          throw new Error(`Feedly API エラー: ${response.status}`)
+          throw new Error(`Feedly API エラー: ${response.status} - ${body}`)
         }
+
+        console.log(`[Feedly] markAsRead API success: ${response.status}`)
       },
       {
         maxRetries: 3,
@@ -317,6 +322,6 @@ export class FeedlyFetcher implements Fetcher {
       }
     )
 
-    console.log(`[Feedly] Marked ${entryIds.length} articles as read`)
+    console.log(`[Feedly] Marked ${entryIds.length} articles as read (IDs: ${entryIds.slice(0, 3).join(', ')}${entryIds.length > 3 ? '...' : ''})`)
   }
 }
