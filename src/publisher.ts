@@ -24,6 +24,8 @@ export interface PublishOptions {
 export interface PublishResult {
   /** コミット SHA */
   commitSha: string
+  /** 実際に使用したパス（インクリメント後のパス） */
+  path: string
 }
 
 /** Publisher 設定 */
@@ -52,8 +54,32 @@ class PublisherError extends Error {
  * パスから日付を抽出
  */
 function extractDateFromPath(path: string): string | null {
-  const match = path.match(/(\d{4}-\d{2}-\d{2})\.md$/)
+  // 2026-01-04.md または 2026-01-04_2.md の形式に対応
+  const match = path.match(/(\d{4}-\d{2}-\d{2})(?:_\d+)?\.md$/)
   return match ? match[1] : null
+}
+
+/**
+ * パスをインクリメント
+ * digests/2026-01-04.md → digests/2026-01-04_2.md
+ * digests/2026-01-04_2.md → digests/2026-01-04_3.md
+ */
+function incrementPath(path: string): string {
+  // すでに _N がある場合
+  const matchWithSuffix = path.match(/^(.+)_(\d+)(\.md)$/)
+  if (matchWithSuffix) {
+    const [, base, num, ext] = matchWithSuffix
+    return `${base}_${parseInt(num, 10) + 1}${ext}`
+  }
+
+  // 初回のインクリメント
+  const matchBase = path.match(/^(.+)(\.md)$/)
+  if (matchBase) {
+    const [, base, ext] = matchBase
+    return `${base}_2${ext}`
+  }
+
+  return path
 }
 
 /**
@@ -136,23 +162,61 @@ export class Publisher {
     options: PublishOptions
   ): Promise<PublishResult> {
     const token = await this.getToken()
-    const { owner, repo, branch, path } = options
+    const { owner, repo, branch } = options
 
-    // 既存ファイルの SHA を取得（更新の場合に必要）
-    const existingSha = await this.getFileSha(token, owner, repo, branch, path)
+    // 利用可能なパスを探す（既存ファイルがあればインクリメント）
+    const availablePath = await this.findAvailablePath(
+      token,
+      owner,
+      repo,
+      branch,
+      options.path
+    )
 
-    // ファイルをコミット
+    // ファイルをコミット（新規作成のため existingSha は undefined）
     const commitSha = await this.commitFile(
       token,
       owner,
       repo,
       branch,
-      path,
+      availablePath,
       content,
-      existingSha
+      undefined
     )
 
-    return { commitSha }
+    return { commitSha, path: availablePath }
+  }
+
+  /**
+   * 利用可能なパスを探す
+   *
+   * 既存ファイルがある場合はインクリメントしたパスを返す。
+   * 例: digests/2026-01-04.md が存在 → digests/2026-01-04_2.md
+   */
+  private async findAvailablePath(
+    token: string,
+    owner: string,
+    repo: string,
+    branch: string,
+    basePath: string
+  ): Promise<string> {
+    let currentPath = basePath
+    const maxAttempts = 100 // 無限ループ防止
+
+    for (let i = 0; i < maxAttempts; i++) {
+      const existingSha = await this.getFileSha(token, owner, repo, branch, currentPath)
+
+      if (!existingSha) {
+        // ファイルが存在しない → このパスを使用
+        return currentPath
+      }
+
+      // ファイルが存在する → インクリメント
+      currentPath = incrementPath(currentPath)
+    }
+
+    // 最大試行回数を超えた場合
+    throw new PublisherError(`利用可能なパスが見つかりません: ${basePath}`)
   }
 
   /**

@@ -104,7 +104,7 @@ async function runPipeline(): Promise<HandlerResult> {
       path: digest.path,
     })
 
-    console.log(`[Pipeline] Published successfully: ${result.commitSha}`)
+    console.log(`[Pipeline] Published successfully: ${result.commitSha} → ${result.path}`)
 
     // Step 5: Mark articles as read (GitHub コミット成功後のみ)
     if (articles.length > 0) {
@@ -125,7 +125,7 @@ async function runPipeline(): Promise<HandlerResult> {
       articleCount: articles.length,
       summaryCount: summaries.length,
       commitSha: result.commitSha,
-      path: digest.path,
+      path: result.path,
     }
   } catch (error) {
     // Publisher 失敗は致命的エラー

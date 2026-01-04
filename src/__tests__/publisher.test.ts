@@ -128,12 +128,13 @@ describe('Publisher', () => {
       const result = await publisher.publish('# Test', defaultOptions)
 
       expect(result.commitSha).toBe('xyz789')
+      expect(result.path).toBe(defaultOptions.path)
     })
   })
 
-  describe('ファイル更新', () => {
-    it('既存ファイルがある場合は更新できる', async () => {
-      // ファイルが存在する（200）→ 更新
+  describe('パスインクリメント', () => {
+    it('既存ファイルがある場合はインクリメントしたパスで作成する', async () => {
+      // 最初のパスが存在（200）→ _2 で作成
       mockFetch
         .mockResolvedValueOnce({
           ok: true,
@@ -143,29 +144,8 @@ describe('Publisher', () => {
             }),
         })
         .mockResolvedValueOnce({
-          ok: true,
-          json: () =>
-            Promise.resolve({
-              commit: { sha: 'updated-sha-456' },
-            }),
-        })
-
-      const publisher = new Publisher()
-      const result = await publisher.publish('# Updated Content', defaultOptions)
-
-      expect(result.commitSha).toBe('updated-sha-456')
-    })
-
-    it('既存ファイルの SHA を取得して更新する', async () => {
-      const existingSha = 'existing-file-sha-abc'
-
-      mockFetch
-        .mockResolvedValueOnce({
-          ok: true,
-          json: () =>
-            Promise.resolve({
-              sha: existingSha,
-            }),
+          ok: false,
+          status: 404,
         })
         .mockResolvedValueOnce({
           ok: true,
@@ -176,12 +156,39 @@ describe('Publisher', () => {
         })
 
       const publisher = new Publisher()
-      await publisher.publish('# Updated', defaultOptions)
+      const result = await publisher.publish('# New Content', defaultOptions)
 
-      // PUT リクエストに sha が含まれることを確認
-      const putCall = mockFetch.mock.calls[1]
-      const body = JSON.parse(putCall[1].body)
-      expect(body.sha).toBe(existingSha)
+      expect(result.commitSha).toBe('new-commit-sha')
+      expect(result.path).toBe('digests/2025-01-01_2.md')
+    })
+
+    it('複数回インクリメントして利用可能なパスを見つける', async () => {
+      // _2 も存在 → _3 で作成
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ sha: 'sha-1' }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ sha: 'sha-2' }),
+        })
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 404,
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              commit: { sha: 'new-commit' },
+            }),
+        })
+
+      const publisher = new Publisher()
+      const result = await publisher.publish('# Content', defaultOptions)
+
+      expect(result.path).toBe('digests/2025-01-01_3.md')
     })
   })
 

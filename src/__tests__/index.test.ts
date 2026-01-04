@@ -134,7 +134,7 @@ describe('Lambda Handler', () => {
         content: '# Daily Digest',
         path: 'digests/2025-01-01.md',
       })
-      mockPublish.mockResolvedValue({ commitSha: 'abc123' })
+      mockPublish.mockResolvedValue({ commitSha: 'abc123', path: 'digests/2025-01-01.md' })
 
       const event = createScheduledEvent()
       const context = createMockContext()
@@ -155,7 +155,7 @@ describe('Lambda Handler', () => {
         content: '# Daily Digest',
         path: 'digests/2025-01-01.md',
       })
-      mockPublish.mockResolvedValue({ commitSha: 'abc123' })
+      mockPublish.mockResolvedValue({ commitSha: 'abc123', path: 'digests/2025-01-01.md' })
 
       const context = createMockContext()
 
@@ -211,7 +211,7 @@ describe('Lambda Handler', () => {
         content: digestContent,
         path: digestPath,
       })
-      mockPublish.mockResolvedValue({ commitSha: 'abc123' })
+      mockPublish.mockResolvedValue({ commitSha: 'abc123', path: 'digests/2025-01-01.md' })
 
       await handler({}, createMockContext())
 
@@ -241,7 +241,7 @@ describe('Lambda Handler', () => {
         content: '# Daily Digest',
         path: 'digests/2025-01-01.md',
       })
-      mockPublish.mockResolvedValue({ commitSha: 'abc123def456' })
+      mockPublish.mockResolvedValue({ commitSha: 'abc123def456', path: 'digests/2025-01-01.md' })
 
       const result = await handler({}, createMockContext())
 
@@ -263,7 +263,7 @@ describe('Lambda Handler', () => {
         content: '# Daily Digest - Empty',
         path: 'digests/2025-01-01.md',
       })
-      mockPublish.mockResolvedValue({ commitSha: 'abc123' })
+      mockPublish.mockResolvedValue({ commitSha: 'abc123', path: 'digests/2025-01-01.md' })
 
       const result = await handler({}, createMockContext())
 
@@ -292,7 +292,7 @@ describe('Lambda Handler', () => {
         content: '# Daily Digest',
         path: 'digests/2025-01-01.md',
       })
-      mockPublish.mockResolvedValue({ commitSha: 'abc123' })
+      mockPublish.mockResolvedValue({ commitSha: 'abc123', path: 'digests/2025-01-01.md' })
 
       const result = await handler({}, createMockContext())
 
@@ -331,7 +331,7 @@ describe('Lambda Handler', () => {
         content: '# Daily Digest',
         path: 'digests/2025-01-01.md',
       })
-      mockPublish.mockResolvedValue({ commitSha: 'abc123' })
+      mockPublish.mockResolvedValue({ commitSha: 'abc123', path: 'digests/2025-01-01.md' })
 
       const result = await handler({}, createMockContext())
 
@@ -350,7 +350,7 @@ describe('Lambda Handler', () => {
         content: '# Daily Digest',
         path: 'digests/2025-01-01.md',
       })
-      mockPublish.mockResolvedValue({ commitSha: 'abc123' })
+      mockPublish.mockResolvedValue({ commitSha: 'abc123', path: 'digests/2025-01-01.md' })
 
       const startTime = Date.now()
 
@@ -374,7 +374,7 @@ describe('Lambda Handler', () => {
         content: '# Daily Digest',
         path: 'digests/2025-01-01.md',
       })
-      mockPublish.mockResolvedValue({ commitSha: 'abc123' })
+      mockPublish.mockResolvedValue({ commitSha: 'abc123', path: 'digests/2025-01-01.md' })
 
       await handler({}, createMockContext())
 
