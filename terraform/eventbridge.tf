@@ -4,12 +4,12 @@
 
 # -----------------------------------------------------------------------------
 # EventBridge Rule
-# 毎日 6:00 JST (21:00 UTC) に Lambda を起動
+# 毎日 9:10 JST (0:10 UTC) に Lambda を起動
 # -----------------------------------------------------------------------------
 
 resource "aws_cloudwatch_event_rule" "daily_digest" {
   name                = "${var.lambda_function_name}-schedule"
-  description         = "Daily Digest を毎日 6:00 JST に実行"
+  description         = "Daily Digest を毎日 9:10 JST に実行"
   schedule_expression = var.schedule_expression
   state               = var.schedule_enabled ? "ENABLED" : "DISABLED"
 

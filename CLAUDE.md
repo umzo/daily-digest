@@ -8,8 +8,8 @@
 データソースは拡張可能な設計となっており、将来的に他のソース（X、RSS、Hacker News 等）を追加可能です。
 
 ### コアワークフロー
-1. **収集**: 毎日 6:00 JST に Feedly から記事を取得
-2. **要約**: Claude 3.5 Haiku API で要点を抽出（記事あたり3-5個の箇条書き）
+1. **収集**: 毎日 9:10 JST に Feedly から記事を取得（前日 9:00 JST 〜 当日 9:00 JST の24時間分）
+2. **要約**: Claude Haiku 4.5 API で要点を抽出（記事あたり3-5個の箇条書き）
 3. **公開**: Markdown を生成し GitHub リポジトリにコミット
 4. **同期**: ユーザーがローカルで pull して Obsidian で閲覧
 
@@ -37,7 +37,7 @@
 | コンピュート | AWS Lambda |
 | スケジューラー | AWS EventBridge |
 | シークレット | AWS Secrets Manager |
-| LLM | Claude 3.5 Haiku (Anthropic API) |
+| LLM | Claude Haiku 4.5 (Anthropic API) |
 | ストレージ | GitHub Repository |
 | ローカル | Obsidian + Git |
 
@@ -195,7 +195,7 @@ tags:
 | リソース | 名前 | 用途 |
 |----------|------|------|
 | Lambda | `daily-digest` | メイン処理関数 |
-| EventBridge | `daily-digest-schedule` | Cron: `0 21 * * ? *` (6:00 JST) |
+| EventBridge | `daily-digest-schedule` | Cron: `10 0 * * ? *` (9:10 JST) |
 | CloudWatch Logs | `/aws/lambda/daily-digest` | ログ出力 |
 | Secrets Manager | `daily-digest-secrets` | API 認証情報 |
 | IAM Role | `daily-digest-lambda-role` | Lambda 実行ロール |

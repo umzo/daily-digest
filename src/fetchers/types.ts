@@ -34,6 +34,9 @@ export interface Article {
 
   /** タグ・カテゴリ（オプション） */
   tags?: string[];
+
+  /** Feedly 記事詳細ページの URL（オプション、Feedly ソースのみ） */
+  feedlyUrl?: string;
 }
 
 /**

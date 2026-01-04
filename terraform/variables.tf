@@ -79,7 +79,7 @@ variable "github_branch" {
 variable "schedule_expression" {
   description = "EventBridge schedule expression (cron or rate)"
   type        = string
-  default     = "cron(0 21 * * ? *)" # 6:00 JST (21:00 UTC)
+  default     = "cron(10 0 * * ? *)" # 9:10 JST (0:10 UTC)
 }
 
 variable "schedule_enabled" {

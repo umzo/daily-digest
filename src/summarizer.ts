@@ -1,7 +1,7 @@
 /**
  * Summarizer - 記事要約モジュール
  *
- * Claude 3.5 Haiku API を使用して記事の要点を抽出する。
+ * Claude Haiku 4.5 API を使用して記事の要点を抽出する。
  * バッチ処理による並列化とエラー耐性を備える。
  */
 
@@ -22,7 +22,7 @@ export interface SummarizerConfig {
 }
 
 /** 使用するモデル */
-const MODEL = 'claude-3-5-haiku-latest'
+const MODEL = 'claude-haiku-4-5'
 
 /** 最大トークン数 */
 const MAX_TOKENS = 1024
@@ -95,7 +95,7 @@ function sleep(ms: number): Promise<void> {
 /**
  * Summarizer クラス
  *
- * Claude 3.5 Haiku API を使用して記事の要約を生成する。
+ * Claude Haiku 4.5 API を使用して記事の要約を生成する。
  */
 export class Summarizer {
   private readonly batchSize: number
