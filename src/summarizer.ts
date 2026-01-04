@@ -22,7 +22,7 @@ export interface SummarizerConfig {
 }
 
 /** 使用するモデル */
-const MODEL = 'claude-haiku-4-5-latest'
+const MODEL = 'claude-haiku-4-5'
 
 /** 最大トークン数 */
 const MAX_TOKENS = 1024
