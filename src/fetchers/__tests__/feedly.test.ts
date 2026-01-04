@@ -274,8 +274,14 @@ describe('FeedlyFetcher', () => {
       expect(url.searchParams.get('streamId')).toBe(
         'user/12345678-1234-1234-1234-123456789abc/category/global.all'
       )
-      expect(url.searchParams.get('unreadOnly')).toBe('true')
       expect(url.searchParams.get('count')).toBe('100')
+      // newerThan と olderThan が設定されていることを確認
+      expect(url.searchParams.get('newerThan')).toBeTruthy()
+      expect(url.searchParams.get('olderThan')).toBeTruthy()
+      // olderThan > newerThan であることを確認（24時間の範囲）
+      const newerThan = Number(url.searchParams.get('newerThan'))
+      const olderThan = Number(url.searchParams.get('olderThan'))
+      expect(olderThan - newerThan).toBe(24 * 60 * 60 * 1000)
     })
   })
 

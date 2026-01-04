@@ -1,7 +1,8 @@
 /**
  * Feedly Fetcher
  *
- * Feedly API から未読記事を取得し、Article 形式に変換する。
+ * Feedly API から記事を取得し、Article 形式に変換する。
+ * 前日 9:00 JST 〜 当日 9:00 JST の24時間分を取得。
  */
 
 import type { Article, Fetcher } from './types'
@@ -91,7 +92,9 @@ export class FeedlyFetcher implements Fetcher {
   private cachedUserId: string | null = null
 
   /**
-   * Feedly API から未読記事を取得
+   * Feedly API から記事を取得
+   *
+   * 前日 9:00 JST 〜 当日 9:00 JST の24時間分を取得する。
    *
    * @returns 取得した記事の配列
    * @throws API リクエストが最終的に失敗した場合
@@ -190,16 +193,45 @@ export class FeedlyFetcher implements Fetcher {
   }
 
   /**
+   * 記事取得の時間範囲を計算
+   *
+   * 当日 9:00 JST を基準に、前日 9:00 JST 〜 当日 9:00 JST の範囲を返す。
+   *
+   * @returns { newerThan, olderThan } タイムスタンプ（ミリ秒）
+   */
+  private getTimeRange(): { newerThan: number; olderThan: number } {
+    const now = new Date()
+
+    // 当日 9:00 JST (= 0:00 UTC) を計算
+    const todayAt9amJST = new Date(now)
+    todayAt9amJST.setUTCHours(0, 0, 0, 0)
+
+    // 実行時刻が 9:00 JST より前の場合は、前日の 9:00 JST を基準にする
+    if (now.getTime() < todayAt9amJST.getTime()) {
+      todayAt9amJST.setTime(todayAt9amJST.getTime() - 24 * 60 * 60 * 1000)
+    }
+
+    const olderThan = todayAt9amJST.getTime()
+    const newerThan = olderThan - 24 * 60 * 60 * 1000
+
+    return { newerThan, olderThan }
+  }
+
+  /**
    * Feedly API にリクエストを送信
    */
   private async fetchStream(
     token: string,
     streamId: string
   ): Promise<FeedlyStreamResponse> {
+    // 前日 9:00 JST 〜 当日 9:00 JST の範囲を取得
+    const { newerThan, olderThan } = this.getTimeRange()
+
     const params = new URLSearchParams({
       streamId,
-      unreadOnly: 'true',
       count: String(MAX_COUNT),
+      newerThan: String(newerThan),
+      olderThan: String(olderThan),
     })
 
     const url = `${FEEDLY_API_BASE}/streams/contents?${params.toString()}`
