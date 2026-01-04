@@ -75,8 +75,8 @@ async function runPipeline(): Promise<HandlerResult> {
   let summaries: Summary[] = []
   try {
     const summarizer = new Summarizer({
-      batchSize: 10,       // 10件並列
-      batchDelayMs: 15000, // 15秒間隔 → 40リクエスト/分
+      batchSize: 5,        // 5件並列（同時接続数制限対策）
+      batchDelayMs: 8000,  // 8秒間隔 → 約37リクエスト/分
     })
     summaries = await summarizer.summarize(articles)
     console.log(`[Pipeline] Generated ${summaries.length} summaries`)
