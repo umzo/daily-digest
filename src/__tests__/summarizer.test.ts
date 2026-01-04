@@ -90,7 +90,7 @@ describe('Summarizer', () => {
       expect(mockCreate).toHaveBeenCalledTimes(1)
       expect(mockCreate).toHaveBeenCalledWith(
         expect.objectContaining({
-          model: 'claude-3-5-haiku-latest',
+          model: 'claude-haiku-4-5-latest',
           max_tokens: 1024,
         })
       )
