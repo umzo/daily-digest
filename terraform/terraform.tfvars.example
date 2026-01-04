@@ -15,7 +15,7 @@ environment = "prod"
 lambda_function_name = "daily-digest"
 lambda_timeout       = 900  # 15 minutes
 lambda_memory_size   = 256
-lambda_runtime       = "nodejs24.x"
+lambda_runtime       = "nodejs22.x"
 lambda_handler       = "index.handler"
 
 # GitHub Configuration (必須)
