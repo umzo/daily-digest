@@ -128,6 +128,8 @@ export class FeedlyFetcher implements Fetcher {
       }
     )
 
+    console.log(`[Feedly] API returned ${response.items.length} entries`)
+
     const articles: Article[] = []
 
     for (const entry of response.items) {
@@ -138,6 +140,11 @@ export class FeedlyFetcher implements Fetcher {
         logError('Feedly Fetcher', error, { entryId: entry.id })
         // 個別記事の変換失敗はスキップして続行
       }
+    }
+
+    if (articles.length > 0) {
+      console.log(`[Feedly] First entry ID: ${articles[0].id}`)
+      console.log(`[Feedly] First entry title: ${articles[0].title}`)
     }
 
     return articles
@@ -214,6 +221,7 @@ export class FeedlyFetcher implements Fetcher {
     })
 
     const url = `${FEEDLY_API_BASE}/streams/contents?${params.toString()}`
+    console.log(`[Feedly] Fetching stream: ${url}`)
 
     const response = await fetch(url, {
       headers: {
