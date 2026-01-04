@@ -26,6 +26,9 @@ export interface Article {
   /** 記事の URL */
   url: string;
 
+  /** Feedly 記事詳細ページの URL（オプション） */
+  feedlyEntryUrl?: string;
+
   /** 著者名（オプション） */
   author?: string;
 

@@ -11,6 +11,9 @@ import { withRetry, logError } from '../utils/retry'
 /** Feedly API のベース URL */
 const FEEDLY_API_BASE = 'https://cloud.feedly.com/v3'
 
+/** Feedly Web アプリのベース URL */
+const FEEDLY_WEB_BASE = 'https://feedly.com/i/entry'
+
 /** 1回のリクエストで取得する最大記事数 */
 const MAX_COUNT = 100
 
@@ -41,6 +44,13 @@ interface FeedlyEntry {
 interface FeedlyStreamResponse {
   items: FeedlyEntry[]
   continuation?: string
+}
+
+/**
+ * Feedly 記事詳細ページの URL を生成
+ */
+function buildFeedlyEntryUrl(entryId: string): string {
+  return `${FEEDLY_WEB_BASE}/${encodeURIComponent(entryId)}`
 }
 
 /**
@@ -243,6 +253,7 @@ export class FeedlyFetcher implements Fetcher {
       title: entry.title ?? '無題',
       content,
       url,
+      feedlyEntryUrl: buildFeedlyEntryUrl(entry.id),
       author: entry.author,
       publishedAt: new Date(entry.published ?? Date.now()),
       tags: entry.keywords,

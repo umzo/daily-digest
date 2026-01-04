@@ -115,6 +115,7 @@ describe('FeedlyFetcher', () => {
         title: 'TypeScript の新機能',
         content: 'TypeScriptに新しい機能が追加されました。',
         url: 'https://example.com/typescript',
+        feedlyEntryUrl: 'https://feedly.com/i/entry/entry-2',
         author: 'Tech Writer',
         publishedAt: new Date(1704153600000),
         tags: ['typescript', 'programming'],

@@ -204,9 +204,11 @@ export class Formatter {
     })
 
     // ソースリンク (blockquote)
+    // feedlyEntryUrl があればそれを優先（Feedly でブックマーク等が可能）
+    const linkUrl = article.feedlyEntryUrl ?? article.url
     const sourceName = capitalize(article.source)
     lines.push('')
-    lines.push(`> [Source](${article.url}) via ${sourceName}`)
+    lines.push(`> [Source](${linkUrl}) via ${sourceName}`)
     lines.push('')
 
     return lines
