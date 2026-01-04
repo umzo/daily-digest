@@ -101,13 +101,13 @@
 ### 6.1 Terraform (`terraform/`)
 **依存**: Lambda Handler 完成後
 
-- [ ] main.tf（プロバイダー設定）
-- [ ] variables.tf（変数定義）
-- [ ] secrets.tf（Secrets Manager）
-- [ ] iam.tf（IAM ロール・ポリシー）
-- [ ] lambda.tf（Lambda 関数）
-- [ ] eventbridge.tf（スケジューラー）
-- [ ] outputs.tf（出力値）
+- [x] main.tf（プロバイダー設定）
+- [x] variables.tf（変数定義）
+- [x] secrets.tf（Secrets Manager）
+- [x] iam.tf（IAM ロール・ポリシー）
+- [x] lambda.tf（Lambda 関数）
+- [x] eventbridge.tf（スケジューラー）
+- [x] outputs.tf（出力値）
 
 ---
 
