@@ -96,6 +96,26 @@ describe('Formatter', () => {
         '> [Source](https://example.com/article1) via Feedly'
       )
     })
+
+    it('feedlyUrl がある場合は feedlyUrl をリンクに使用する', () => {
+      const formatter = new Formatter()
+      const summaries = [
+        createSummary({
+          article: createArticle({
+            url: 'https://example.com/article1',
+            source: 'feedly',
+            feedlyUrl: 'https://feedly.com/i/entry/abc123',
+          }),
+        }),
+      ]
+      const result = formatter.format(summaries, {
+        date: new Date('2025-01-01'),
+      })
+
+      expect(result.content).toContain(
+        '> [Source](https://feedly.com/i/entry/abc123) via Feedly'
+      )
+    })
   })
 
   describe('YAML frontmatter', () => {

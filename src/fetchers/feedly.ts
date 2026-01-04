@@ -237,6 +237,9 @@ export class FeedlyFetcher implements Fetcher {
     const rawContent = entry.content?.content ?? entry.summary?.content ?? ''
     const content = stripHtml(rawContent)
 
+    // Feedly 記事詳細ページの URL を生成
+    const feedlyUrl = `https://feedly.com/i/entry/${encodeURIComponent(entry.id)}`
+
     return {
       id: entry.id,
       source: 'feedly',
@@ -246,6 +249,7 @@ export class FeedlyFetcher implements Fetcher {
       author: entry.author,
       publishedAt: new Date(entry.published ?? Date.now()),
       tags: entry.keywords,
+      feedlyUrl,
     }
   }
 

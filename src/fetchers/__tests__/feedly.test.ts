@@ -118,6 +118,7 @@ describe('FeedlyFetcher', () => {
         author: 'Tech Writer',
         publishedAt: new Date(1704153600000),
         tags: ['typescript', 'programming'],
+        feedlyUrl: 'https://feedly.com/i/entry/entry-2',
       })
     })
 
