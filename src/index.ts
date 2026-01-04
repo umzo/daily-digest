@@ -59,8 +59,8 @@ async function runPipeline(): Promise<HandlerResult> {
   // Step 1: Fetch articles
   console.log('[Pipeline] Fetching articles...')
   let articles: Article[] = []
+  const fetcher = new FeedlyFetcher()
   try {
-    const fetcher = new FeedlyFetcher()
     articles = await fetcher.fetch()
     console.log(`[Pipeline] Fetched ${articles.length} articles`)
   } catch (error) {
@@ -74,7 +74,10 @@ async function runPipeline(): Promise<HandlerResult> {
   console.log('[Pipeline] Summarizing articles...')
   let summaries: Summary[] = []
   try {
-    const summarizer = new Summarizer()
+    const summarizer = new Summarizer({
+      batchSize: 1,        // 1件ずつ順次処理
+      batchDelayMs: 1500,  // 1.5秒間隔 → 40リクエスト/分
+    })
     summaries = await summarizer.summarize(articles)
     console.log(`[Pipeline] Generated ${summaries.length} summaries`)
   } catch (error) {
@@ -102,6 +105,20 @@ async function runPipeline(): Promise<HandlerResult> {
     })
 
     console.log(`[Pipeline] Published successfully: ${result.commitSha}`)
+
+    // Step 5: Mark articles as read (GitHub コミット成功後のみ)
+    if (articles.length > 0) {
+      console.log('[Pipeline] Marking articles as read...')
+      try {
+        const entryIds = articles.map((a) => a.id)
+        await fetcher.markAsRead(entryIds)
+        console.log(`[Pipeline] Marked ${entryIds.length} articles as read`)
+      } catch (error) {
+        // 既読処理失敗はログのみ（コミットは成功しているので続行）
+        logError('Pipeline:MarkAsRead', error, {})
+        console.log('[Pipeline] Failed to mark as read, but commit succeeded')
+      }
+    }
 
     return {
       success: true,

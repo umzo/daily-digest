@@ -4,7 +4,7 @@
   "description": "Feedly から記事を収集・要約し、Obsidian Vault に公開するサーバーレスシステム",
   "type": "module",
   "scripts": {
-    "build": "tsdown",
+    "build": "esbuild src/index.ts --bundle --platform=node --target=node22 --outfile=dist/index.cjs --format=cjs",
     "dev": "tsdown --watch",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -15,12 +15,13 @@
   "devDependencies": {
     "@types/aws-lambda": "^8.10.159",
     "@types/node": "24.10.4",
+    "esbuild": "^0.27.2",
     "tsdown": "0.18.4",
     "typescript": "5.9.3",
     "vitest": "4.0.16"
   },
   "engines": {
-    "node": ">=24.0.0"
+    "node": ">=22.0.0"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",

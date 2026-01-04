@@ -255,4 +255,57 @@ export class FeedlyFetcher implements Fetcher {
   clearUserIdCache(): void {
     this.cachedUserId = null
   }
+
+  /**
+   * 記事を既読にマーク
+   *
+   * @param entryIds 既読にする記事IDの配列
+   */
+  async markAsRead(entryIds: string[]): Promise<void> {
+    if (entryIds.length === 0) {
+      return
+    }
+
+    const secrets = await getSecrets()
+    const token = secrets.FEEDLY_ACCESS_TOKEN
+
+    await withRetry(
+      async () => {
+        const url = `${FEEDLY_API_BASE}/markers`
+
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            action: 'markAsRead',
+            type: 'entries',
+            entryIds,
+          }),
+        })
+
+        if (!response.ok) {
+          if (response.status === 401) {
+            throw new Error('認証エラー: Feedly アクセストークンが無効です')
+          }
+          if (response.status === 429) {
+            throw new Error('レート制限 (429): リクエスト制限に達しました')
+          }
+          throw new Error(`Feedly API エラー: ${response.status}`)
+        }
+      },
+      {
+        maxRetries: 3,
+        baseDelay: 1000,
+        shouldRetry,
+        onRetry: (error, attempt) => {
+          logError('Feedly markAsRead', error, { attempt, count: entryIds.length })
+        },
+      }
+    )
+
+    console.log(`[Feedly] Marked ${entryIds.length} articles as read`)
+  }
 }
