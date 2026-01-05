@@ -24,7 +24,7 @@ github_repo   = "your-obsidian-vault-repo"
 github_branch = "main"
 
 # Schedule Configuration
-schedule_expression = "cron(0 21 * * ? *)"  # 6:00 JST (21:00 UTC)
+schedule_expression = "cron(10 0 * * ? *)"  # 9:10 JST (0:10 UTC)
 schedule_enabled    = true
 
 # Secrets Configuration
