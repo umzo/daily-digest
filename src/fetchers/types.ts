@@ -40,6 +40,21 @@ export interface Article {
 }
 
 /**
+ * 記事取得オプション
+ *
+ * Fetcher の fetch() メソッドに渡すオプション。
+ */
+export interface FetchOptions {
+  /**
+   * 取得対象の日付
+   *
+   * この日付の 9:00 JST から過去24時間分の記事を取得する。
+   * 未指定の場合は現在日時を基準にする。
+   */
+  targetDate?: Date;
+}
+
+/**
  * 記事取得用インターフェース
  *
  * 新しいデータソースを追加する際は、このインターフェースを実装する。
@@ -51,10 +66,11 @@ export interface Fetcher {
   /**
    * 記事を取得
    *
+   * @param options 取得オプション（日付指定など）
    * @returns 取得した記事の配列
    * @throws 取得に失敗した場合（リトライ後も失敗した場合）
    */
-  fetch(): Promise<Article[]>;
+  fetch(options?: FetchOptions): Promise<Article[]>;
 }
 
 /**

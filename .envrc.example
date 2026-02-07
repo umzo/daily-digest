@@ -1,0 +1,5 @@
+# AWS
+export AWS_PROFILE=your-profile
+
+# Terraform S3 Backend
+export TF_STATE_BUCKET=your-terraform-state-bucket

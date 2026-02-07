@@ -13,6 +13,21 @@ import { Formatter } from './formatter'
 import { Publisher } from './publisher'
 import { logError } from './utils/retry'
 
+/**
+ * Lambda イベント型
+ *
+ * EventBridge スケジュールイベントまたは手動呼び出しで日付指定が可能。
+ */
+export interface DigestEvent {
+  /**
+   * 取得対象の日付（YYYY-MM-DD 形式）
+   *
+   * この日付の 9:00 JST から過去24時間分の記事を取得する。
+   * 未指定の場合は現在日時を基準にする。
+   */
+  targetDate?: string
+}
+
 /** ハンドラーの実行結果 */
 export interface HandlerResult {
   /** 処理成功フラグ */
@@ -48,20 +63,50 @@ function getGitHubConfig(): GitHubConfig {
 }
 
 /**
+ * イベントから対象日付をパース
+ *
+ * @param event Lambda イベント
+ * @returns パースされた日付（無効な場合は undefined）
+ */
+function parseTargetDate(event: ScheduledEvent | DigestEvent | Record<string, unknown>): Date | undefined {
+  if ('targetDate' in event && typeof event.targetDate === 'string') {
+    const parsed = new Date(event.targetDate)
+    if (!isNaN(parsed.getTime())) {
+      return parsed
+    }
+    console.warn(`[Lambda] Invalid targetDate format: ${event.targetDate}, using current date`)
+  }
+  return undefined
+}
+
+/** パイプライン実行オプション */
+interface PipelineOptions {
+  /** 取得対象の日付（未指定の場合は現在日時を基準） */
+  targetDate?: Date
+}
+
+/**
  * パイプライン実行
  *
  * Fetcher → Summarizer → Formatter → Publisher の順で処理を実行する。
+ *
+ * @param options パイプラインオプション
  */
-async function runPipeline(): Promise<HandlerResult> {
+async function runPipeline(options?: PipelineOptions): Promise<HandlerResult> {
   const githubConfig = getGitHubConfig()
-  const today = new Date()
+  const targetDate = options?.targetDate
+  // ダイジェストの日付: targetDate が指定されている場合はその日付、未指定の場合は当日
+  const digestDate = targetDate ?? new Date()
 
   // Step 1: Fetch articles
   console.log('[Pipeline] Fetching articles...')
+  if (targetDate) {
+    console.log(`[Pipeline] Target date: ${targetDate.toISOString().split('T')[0]}`)
+  }
   let articles: Article[] = []
   const fetcher = new FeedlyFetcher()
   try {
-    articles = await fetcher.fetch()
+    articles = await fetcher.fetch({ targetDate })
     console.log(`[Pipeline] Fetched ${articles.length} articles`)
   } catch (error) {
     // Fetcher 失敗時は空の結果で続行
@@ -90,7 +135,7 @@ async function runPipeline(): Promise<HandlerResult> {
   // Step 3: Format as Markdown
   console.log('[Pipeline] Formatting digest...')
   const formatter = new Formatter()
-  const digest = formatter.format(summaries, { date: today })
+  const digest = formatter.format(summaries, { date: digestDate })
   console.log(`[Pipeline] Generated digest: ${digest.path}`)
 
   // Step 4: Publish to GitHub
@@ -147,19 +192,21 @@ async function runPipeline(): Promise<HandlerResult> {
  * Lambda ハンドラー
  *
  * EventBridge スケジュールイベントまたは手動呼び出しを受け付ける。
+ * 手動呼び出し時は { "targetDate": "YYYY-MM-DD" } 形式で日付を指定可能。
  *
- * @param _event EventBridge イベント（未使用）
+ * @param event EventBridge イベントまたは日付指定イベント
  * @param _context Lambda 実行コンテキスト（未使用）
  * @returns 処理結果
  */
 export async function handler(
-  _event: ScheduledEvent | Record<string, unknown>,
+  event: ScheduledEvent | DigestEvent | Record<string, unknown>,
   _context: Context
 ): Promise<HandlerResult> {
   console.log('[Lambda] Handler started')
 
   try {
-    const result = await runPipeline()
+    const targetDate = parseTargetDate(event)
+    const result = await runPipeline({ targetDate })
 
     if (result.success) {
       console.log('[Lambda] Handler completed successfully', {

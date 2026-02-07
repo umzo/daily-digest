@@ -10,6 +10,7 @@ coverage/
 # Environment
 .env
 .env.local
+.envrc
 
 # IDE
 .vscode/
@@ -18,3 +19,11 @@ coverage/
 # OS
 .DS_Store
 Thumbs.db
+
+# Terraform
+terraform/.terraform/
+terraform/*.tfstate
+terraform/*.tfstate.*
+terraform/*.tfvars
+terraform/*.tfvars.json
+!terraform/*.tfvars.example

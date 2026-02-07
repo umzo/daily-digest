@@ -15,6 +15,14 @@ terraform {
       version = "~> 2.0"
     }
   }
+
+  backend "s3" {
+    key          = "daily-digest/terraform.tfstate"
+    region       = "ap-northeast-1"
+    encrypt      = true
+    use_lockfile = true
+    # bucket は環境変数 TF_STATE_BUCKET で指定
+  }
 }
 
 provider "aws" {

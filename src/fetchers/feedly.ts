@@ -5,7 +5,7 @@
  * 前日 9:00 JST 〜 当日 9:00 JST の24時間分を取得。
  */
 
-import type { Article, Fetcher } from './types'
+import type { Article, Fetcher, FetchOptions } from './types'
 import { getSecrets } from '../secrets'
 import { withRetry, logError } from '../utils/retry'
 
@@ -94,12 +94,14 @@ export class FeedlyFetcher implements Fetcher {
   /**
    * Feedly API から記事を取得
    *
-   * 前日 9:00 JST 〜 当日 9:00 JST の24時間分を取得する。
+   * 指定日の 9:00 JST から過去24時間分を取得する。
+   * 日付未指定の場合は現在日時を基準にする。
    *
+   * @param options 取得オプション（日付指定など）
    * @returns 取得した記事の配列
    * @throws API リクエストが最終的に失敗した場合
    */
-  async fetch(): Promise<Article[]> {
+  async fetch(options?: FetchOptions): Promise<Article[]> {
     const secrets = await getSecrets()
     const token = secrets.FEEDLY_ACCESS_TOKEN
 
@@ -110,7 +112,7 @@ export class FeedlyFetcher implements Fetcher {
     const streamId = `user/${userId}/category/global.all`
 
     const response = await withRetry(
-      () => this.fetchStream(token, streamId),
+      () => this.fetchStream(token, streamId, options?.targetDate),
       {
         maxRetries: 3,
         baseDelay: 1000,
@@ -195,12 +197,13 @@ export class FeedlyFetcher implements Fetcher {
   /**
    * 記事取得の時間範囲を計算
    *
-   * 当日 9:00 JST を基準に、前日 9:00 JST 〜 当日 9:00 JST の範囲を返す。
+   * 指定日の 9:00 JST を基準に、前日 9:00 JST 〜 当日 9:00 JST の範囲を返す。
    *
+   * @param targetDate 基準日（未指定の場合は現在日時）
    * @returns { newerThan, olderThan } タイムスタンプ（ミリ秒）
    */
-  private getTimeRange(): { newerThan: number; olderThan: number } {
-    const now = new Date()
+  private getTimeRange(targetDate?: Date): { newerThan: number; olderThan: number } {
+    const now = targetDate ?? new Date()
 
     // 当日 9:00 JST (= 0:00 UTC) を計算
     const todayAt9amJST = new Date(now)
@@ -219,13 +222,18 @@ export class FeedlyFetcher implements Fetcher {
 
   /**
    * Feedly API にリクエストを送信
+   *
+   * @param token アクセストークン
+   * @param streamId ストリームID
+   * @param targetDate 基準日（未指定の場合は現在日時）
    */
   private async fetchStream(
     token: string,
-    streamId: string
+    streamId: string,
+    targetDate?: Date
   ): Promise<FeedlyStreamResponse> {
-    // 前日 9:00 JST 〜 当日 9:00 JST の範囲を取得
-    const { newerThan, olderThan } = this.getTimeRange()
+    // 指定日の 9:00 JST から過去24時間分の範囲を取得
+    const { newerThan, olderThan } = this.getTimeRange(targetDate)
 
     const params = new URLSearchParams({
       streamId,

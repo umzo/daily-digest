@@ -78,36 +78,62 @@ daily-digest/
 # 依存関係インストール
 npm install
 
-# Lambda 用ビルド
-npm run build
+# ビルド
+make build
 
-# ローカル実行（開発）
-npm run dev
+# デプロイ
+make deploy
 
-# インフラデプロイ
-cd terraform && terraform apply
+# 強制再デプロイ（Lambda を置き換え）
+make deploy-force
 
-# Lint & フォーマット
-npm run lint
-npm run format
+# Terraform 初期化（初回のみ）
+make tf-init
 
 # テスト実行
 npm test
 
-# テスト（ウォッチモード）
-npm run test:watch
-
-# カバレッジ付きテスト
-npm run test:coverage
+# Lint & フォーマット
+npm run lint
+npm run format
 ```
 
+## Lambda 手動実行
+
+```bash
+# 特定の日付のダイジェストを生成（日本時間）
+aws lambda invoke \
+  --function-name daily-digest \
+  --payload '{"targetDate": "2026-02-05"}' \
+  --cli-binary-format raw-in-base64-out \
+  /dev/stdout
+
+# 日付未指定（現在日時を基準に処理）
+aws lambda invoke \
+  --function-name daily-digest \
+  --payload '{}' \
+  --cli-binary-format raw-in-base64-out \
+  /dev/stdout
+```
+
+`targetDate` は日本時間の日付（YYYY-MM-DD 形式）を指定。
+例: `"2026-02-05"` → 2026-02-04 9:00 JST 〜 2026-02-05 9:00 JST の記事を取得。
+
 ## 主要な型定義
+
+### FetchOptions（取得オプション）
+```typescript
+interface FetchOptions {
+  /** 取得対象の日付（この日付の 9:00 JST から過去24時間分を取得） */
+  targetDate?: Date;
+}
+```
 
 ### Fetcher インターフェース（拡張用）
 ```typescript
 interface Fetcher {
   readonly name: string;
-  fetch(): Promise<Article[]>;
+  fetch(options?: FetchOptions): Promise<Article[]>;
 }
 ```
 

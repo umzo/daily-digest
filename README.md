@@ -66,6 +66,35 @@ npm run build
    terraform apply
    ```
 
+## 使い方
+
+### 自動実行
+
+毎日 9:10 JST に EventBridge が Lambda を起動し、前日 9:00 JST 〜 当日 9:00 JST の記事を処理します。
+
+### 手動実行
+
+過去の日付を指定してダイジェストを生成できます。
+
+```bash
+# 特定の日付のダイジェストを生成（日本時間）
+aws lambda invoke \
+  --function-name daily-digest \
+  --payload '{"targetDate": "2026-02-05"}' \
+  --cli-binary-format raw-in-base64-out \
+  /dev/stdout
+
+# 日付未指定（現在日時を基準に処理）
+aws lambda invoke \
+  --function-name daily-digest \
+  --payload '{}' \
+  --cli-binary-format raw-in-base64-out \
+  /dev/stdout
+```
+
+`targetDate` は日本時間の日付（YYYY-MM-DD 形式）を指定します。
+例: `"2026-02-05"` → 2026-02-04 9:00 JST 〜 2026-02-05 9:00 JST の記事を取得し、`digests/2026-02-05.md` として保存。
+
 ## 開発
 
 ```bash
